@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="utf-8">
+  
+
+  
+  <title>Process Injection 101: Hello World | Dan&#39;s Blog</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="The accompanying source files for this blog post are on GitHub: https://github.com/MayerDaniel/ProcessInjection/tree/master/101 Process injection is the act of writing arbitrary code into an already-r">
+<meta name="keywords" content="Process Injection, How-To, Game Hacking, C++, Windows">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Process Injection 101: Hello World">
+<meta property="og:url" content="http://mayerdaniel.github.io/2020/04/19/Process-Injection-101-Hello-World/index.html">
+<meta property="og:site_name" content="Dan&#39;s Blog">
+<meta property="og:description" content="The accompanying source files for this blog post are on GitHub: https://github.com/MayerDaniel/ProcessInjection/tree/master/101 Process injection is the act of writing arbitrary code into an already-r">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://mayerdaniel.github.io/2020/04/19/Process-Injection-101-Hello-World/dll_proj.png">
+<meta property="og:image" content="http://mayerdaniel.github.io/2020/04/19/Process-Injection-101-Hello-World/console_proj.png">
+<meta property="og:image" content="http://mayerdaniel.github.io/2020/04/19/Process-Injection-101-Hello-World/injected.png">
+<meta property="og:updated_time" content="2020-04-20T00:38:20.880Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Process Injection 101: Hello World">
+<meta name="twitter:description" content="The accompanying source files for this blog post are on GitHub: https://github.com/MayerDaniel/ProcessInjection/tree/master/101 Process injection is the act of writing arbitrary code into an already-r">
+<meta name="twitter:image" content="http://mayerdaniel.github.io/2020/04/19/Process-Injection-101-Hello-World/dll_proj.png">
+  
+    <link rel="alternate" href="/atom.xml" title="Dan&#39;s Blog" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+  <link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/prism-cb.css" type="text/css"></head>
+</html>
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Dan&#39;s Blog</a>
+      </h1>
+      
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-Process-Injection-101-Hello-World" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    
+      <a href="/2020/04/19/Process-Injection-101-Hello-World/" class="article-date">
+  <time datetime="2020-04-19T20:09:51.000Z" itemprop="datePublished">2020-04-19</time>
+</a>
+      
+  <div class="article-category">
+    <a class="article-category-link" href="/categories/Process-Injection/">Process Injection</a>
+  </div>
+
+      
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Process Injection 101: Hello World
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>The accompanying source files for this blog post are on GitHub: <a href="https://github.com/MayerDaniel/ProcessInjection/tree/master/101" target="_blank" rel="noopener">https://github.com/MayerDaniel/ProcessInjection/tree/master/101</a></p>
+<p>Process injection is the act of writing arbitrary code into an already-running process and executing it. It is used frequently by red teamers, malware authors, and game hackers because it is a powerful detection evasion technique, can gain you read/write/execute access to sensitive information residing in the target process, and allows you alter that process’s behavior. As a malware reverse engineer, I have looked at quite a few process injection techniques, and <em>loosely</em> understand how they work, but I have never had to implement one.</p>
+<p>There are myriad ways to inject into a running process and every malware author seemingly knows them, but whenever I google “how to inject into a process”, I get a bunch of articles that are bogged down in the weeds where they don’t need to be, hand-wavey at parts that I felt warrant more explanation, and none of them linked references to the <a href="https://docs.microsoft.com/en-us/windows/win32/desktop-programming" target="_blank" rel="noopener">Windows API docs</a> enough. After reading through a couple of them, this is my attempt to write the article _I_ would have wanted to find. This is the absolute simplest example of process injection I could write and execute on a windows machine.</p>
+<h2 id="DLL-Injection-via-LoadLibrary"><a href="#DLL-Injection-via-LoadLibrary" class="headerlink" title="DLL Injection via LoadLibrary"></a>DLL Injection via LoadLibrary</h2><p>Dynamic Link Libraries, or DLLs, are executables designed to contain library code that can be used by multiple programs. One of the ways that a program can call functions from a DLL is via <a href="https://docs.microsoft.com/en-us/windows/win32/dlls/run-time-dynamic-linking" target="_blank" rel="noopener">run-time dynamic linking</a>, which is when a DLL is loaded into the process space of program so that its exported functions can be called. This is great for us, because it means DLLs are designed from the get-go to be mapped into the memory of processes and executed! To learn more about DLLs, the microsoft docs are <a href="https://docs.microsoft.com/en-us/windows/win32/dlls/dynamic-link-libraries" target="_blank" rel="noopener">here.</a></p>
+<h4 id="What-you-will-need"><a href="#What-you-will-need" class="headerlink" title="What you will need:"></a>What you will need:</h4><ul>
+<li>A Windows machine with <a href="https://visualstudio.microsoft.com/" target="_blank" rel="noopener">Visual Studio</a> installed</li>
+<li>A target process to inject into. I use <a href="https://github.com/MayerDaniel/ProcessInjection/blob/master/101/HelloWorld.exe?raw=true" target="_blank" rel="noopener">this command line executable</a> that prints “Hello World” every 1000 ms for this post.</li>
+<li>A debugger that allows you to step through your injector and injectee when your code isn’t working. I recommend <a href="https://x64dbg.com/#start" target="_blank" rel="noopener">x64dbg</a>.</li>
+</ul>
+<p>I won’t cover debugging in this tutorial, but if you want an easy-to-follow walkthrough of x64dbg, check out this <a href="https://www.youtube.com/watch?v=4VBVMKdY-yg" target="_blank" rel="noopener">tutorial from OALabs</a> - full disclosure, I work with the guys who run OALabs, but I think they make super high quality tutorials/tools that I use and wholeheartedly recommend to beginner reverse engineers.</p>
+<h2 id="Let’s-get-started"><a href="#Let’s-get-started" class="headerlink" title="Let’s get started!"></a>Let’s get started!</h2><p>For this project, you will end up creating two different projects within Visual Studio:</p>
+<ul>
+<li>The payload DLL that will gets injected into your target process</li>
+<li>The injector which loads your payload into the target process and executes it</li>
+</ul>
+<h3 id="Creating-the-payload-DLL"><a href="#Creating-the-payload-DLL" class="headerlink" title="Creating the payload DLL"></a>Creating the payload DLL</h3><p>When creating a new project in Visual Studio, search “dll” in the top bar, and select the basic DLL project template.</p>
+<p><img src="/2020/04/19/Process-Injection-101-Hello-World/dll_proj.png" alt="DLL Project in VS" title="DLL Project in VS"></p>
+<p>Once you have selected a name and filepath for your project, you will be presented with the following code:</p>
+<pre class=" language-cpp"><code class="language-cpp">
+<span class="token comment" spellcheck="true">// dllmain.cpp : Defines the entry point for the DLL application.</span>
+<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">"pch.h"</span></span>
+
+BOOL APIENTRY <span class="token function">DllMain</span><span class="token punctuation">(</span> HMODULE hModule<span class="token punctuation">,</span>
+                       DWORD  ul_reason_for_call<span class="token punctuation">,</span>
+                       LPVOID lpReserved
+                     <span class="token punctuation">)</span>
+
+<span class="token punctuation">{</span>
+
+    <span class="token keyword">switch</span> <span class="token punctuation">(</span>ul_reason_for_call<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+    <span class="token keyword">case</span> DLL_PROCESS_ATTACH<span class="token operator">:</span>
+    <span class="token keyword">case</span> DLL_THREAD_ATTACH<span class="token operator">:</span>
+    <span class="token keyword">case</span> DLL_THREAD_DETACH<span class="token operator">:</span>
+    <span class="token keyword">case</span> DLL_PROCESS_DETACH<span class="token operator">:</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword">return</span> TRUE<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre>
+<p>This project template contains the skeleton of the <code>DLLMain</code> method, which the entry point for a DLL. It is called in 4 scenarios, as evidenced by the switch statement. For more info on each of the 4 scenarios, they are laid out in the <a href="https://docs.microsoft.com/en-us/windows/win32/dlls/dllmain" target="_blank" rel="noopener">documentation for DLLMain.</a></p>
+<p>For a simple payload, call <a href="https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-messagebox" target="_blank" rel="noopener">MessageBox</a> for each case in the switch, so you can see when DllMain gets called.</p>
+<pre class=" language-cpp"><code class="language-cpp">
+<span class="token comment" spellcheck="true">// dllmain.cpp : Defines the entry point for the DLL application.</span>
+<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">"pch.h"</span></span>
+<span class="token macro property">#<span class="token directive keyword">include</span> <span class="token string">&lt;Windows.h></span></span>
+
+BOOL APIENTRY <span class="token function">DllMain</span><span class="token punctuation">(</span> HMODULE hModule<span class="token punctuation">,</span>
+                       DWORD  ul_reason_for_call<span class="token punctuation">,</span>
+                       LPVOID lpReserved
+                     <span class="token punctuation">)</span>
+<span class="token punctuation">{</span>
+    <span class="token comment" spellcheck="true">// NOTE:</span>
+    <span class="token comment" spellcheck="true">// You can execute code here as well, and it will execute</span>
+    <span class="token comment" spellcheck="true">// regardless of the value of ul_reason_for_call</span>
+
+    <span class="token keyword">switch</span> <span class="token punctuation">(</span>ul_reason_for_call<span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+    <span class="token keyword">case</span> DLL_PROCESS_ATTACH<span class="token operator">:</span>
+        <span class="token function">MessageBox</span><span class="token punctuation">(</span>
+            <span class="token constant">NULL</span><span class="token punctuation">,</span>
+            <span class="token punctuation">(</span>LPCWSTR<span class="token punctuation">)</span>L<span class="token string">"DLL_PROCESS_ATTACH"</span><span class="token punctuation">,</span>
+            <span class="token punctuation">(</span>LPCWSTR<span class="token punctuation">)</span>L<span class="token string">"In DllMain"</span><span class="token punctuation">,</span>
+            MB_OK
+        <span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> DLL_THREAD_ATTACH<span class="token operator">:</span>
+        <span class="token function">MessageBox</span><span class="token punctuation">(</span>
+            <span class="token constant">NULL</span><span class="token punctuation">,</span>
+            <span class="token punctuation">(</span>LPCWSTR<span class="token punctuation">)</span>L<span class="token string">"DLL_THREAD_ATTACH"</span><span class="token punctuation">,</span>
+            <span class="token punctuation">(</span>LPCWSTR<span class="token punctuation">)</span>L<span class="token string">"In DllMain"</span><span class="token punctuation">,</span>
+            MB_OK
+        <span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> DLL_THREAD_DETACH<span class="token operator">:</span>
+        <span class="token function">MessageBox</span><span class="token punctuation">(</span>
+            <span class="token constant">NULL</span><span class="token punctuation">,</span>
+            <span class="token punctuation">(</span>LPCWSTR<span class="token punctuation">)</span>L<span class="token string">"DLL_THREAD_DETACH"</span><span class="token punctuation">,</span>
+            <span class="token punctuation">(</span>LPCWSTR<span class="token punctuation">)</span>L<span class="token string">"In DllMain"</span><span class="token punctuation">,</span>
+            MB_OK
+        <span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token keyword">case</span> DLL_PROCESS_DETACH<span class="token operator">:</span>
+        <span class="token function">MessageBox</span><span class="token punctuation">(</span>
+            <span class="token constant">NULL</span><span class="token punctuation">,</span>
+            <span class="token punctuation">(</span>LPCWSTR<span class="token punctuation">)</span>L<span class="token string">"DLL_PROCESS_DETACH"</span><span class="token punctuation">,</span>
+            <span class="token punctuation">(</span>LPCWSTR<span class="token punctuation">)</span>L<span class="token string">"In DllMain"</span><span class="token punctuation">,</span>
+            MB_OK
+        <span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">break</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token comment" spellcheck="true">// NOTE:</span>
+    <span class="token comment" spellcheck="true">// You can execute code here as well, and it will execute</span>
+    <span class="token comment" spellcheck="true">// regardless of the value of ul_reason_for_call</span>
+
+    <span class="token keyword">return</span> TRUE<span class="token punctuation">;</span>
+<span class="token punctuation">}</span>
+
+</code></pre>
+<p>After building the project (<code>ctrl+b</code>), you can test it with <code>rundll32.exe</code>. You need to call an exported function to run your DLL, but since the code above does not export any functions, you can just call a bogus function <code>#1</code>:</p>
+<pre class=" language-cpponsole"><code class="language-cpponsole">C:\Windows\System32\rundll32.exe <path to built DLL> #1
+</code></pre>
+<p>This will cause an error, since the you don’t have an exported <code>#1</code> function, but you can still observe the various MessageBoxes as they trigger.</p>
+<p>Great! Now that you have a payload, on to the injector.</p>
+<h3 id="Creating-the-injector"><a href="#Creating-the-injector" class="headerlink" title="Creating the injector"></a>Creating the injector</h3><p><a href="https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya" target="_blank" rel="noopener">LoadLibrary</a> is a function in the Windows API that will do all of the hard work for us. It loads a DLL into the memory of the calling process and calls <code>DLLMain</code>, so all you need to do is get your target process to call <code>LoadLibrary</code>, and the rest is taken care of!</p>
+<p><code>LoadLibrary</code> requires the path of the DLL it is loading as an argument, so you need to write your payload DLL’s absolute path into your target process. After that string exists within the address space of your target process, the final step is to get the target process to execute <code>LoadLibrary</code> with that string as an argument.</p>
+<p>To do this, your injector needs to perform just 7 api calls:</p>
+<ul>
+<li><a href="https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfullpathnamew" target="_blank" rel="noopener">GetFullPathName</a> to get the absolute path of your payload DLL, which will be written to your target process.</li>
+<li><a href="https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess" target="_blank" rel="noopener">OpenProcess</a> to open a handle to your target process.</li>
+<li><a href="https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex" target="_blank" rel="noopener">VirtualAllocEx</a> to allocate a buffer in your target process, which will be <em>where</em> the absolute path is written to inside of the target process.</li>
+<li><a href="https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory" target="_blank" rel="noopener">WriteProcessMemory</a> to write your payload’s path to the allocated buffer inside of your target process.</li>
+<li><a href="https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea" target="_blank" rel="noopener">GetModuleHandle</a> to open a handle to kernel32.dll, the DLL that exports LoadLibrary.</li>
+<li><a href="https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress" target="_blank" rel="noopener">GetProcAddress</a> to find the address of <a href="https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-loadlibrarya" target="_blank" rel="noopener">LoadLibrary</a> once you have a handle to kernel32.dll (due to the way windows works, you can assume this address will be the same in your target process - more on that later).</li>
+<li><a href="https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethread" target="_blank" rel="noopener">CreateRemoteThread</a> to create a new thread in the target process that will call LoadLibrary with the payload’s path as an argument.</li>
+</ul>
+<p><img src="/2020/04/19/Process-Injection-101-Hello-World/console_proj.png" alt="Console Application Project in VS" title="Console Application Project in VS"></p>
+<h4 id="GetFullPathName"><a href="#GetFullPathName" class="headerlink" title="GetFullPathName"></a>GetFullPathName</h4><p>To make my injector as easy to follow as possible, I include a bunch of print statements and user prompts, but none of that is necessary, you could hardcode the PID and DLL path if you want, or input them as arguments when you call you injector from the commandline. For my example code, I prompt the user and read <code>cin</code>. I also tried to make my variables as self explanatory as possible, but if you don’t know what a variable is, check one of the earlier steps to see where it is defined. You can also see the whole source <a href="GITHUB">here</a>.</p>
+<p>I open my process handle with the access rights <code>PROCESS_ALL_ACCESS</code>, which it the most liberal access rights option available. A good exercise would be to figure out are the minimal access rights actually needed from <a href="https://docs.microsoft.com/en-us/windows/win32/procthread/process-security-and-access-rights" target="_blank" rel="noopener">here</a> to still make this injector work.</p>
+<pre class=" language-cpp"><code class="language-cpp">    DWORD PID<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Please enter the desired PID you wish to inject into:\n"</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cin <span class="token operator">>></span> PID<span class="token punctuation">;</span>
+
+    HANDLE processHandle<span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Attempting to open a handle to the desired process...\n"</span><span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openprocess</span>
+    processHandle <span class="token operator">=</span> <span class="token function">OpenProcess</span><span class="token punctuation">(</span>PROCESS_ALL_ACCESS<span class="token punctuation">,</span>
+                                FALSE<span class="token punctuation">,</span>
+                                PID<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>processHandle <span class="token operator">==</span> <span class="token constant">NULL</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Failed to open a process for PID %d"</span><span class="token punctuation">,</span> PID<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"Handle opened\n"</span>
+</code></pre>
+<h4 id="OpenProcess"><a href="#OpenProcess" class="headerlink" title="OpenProcess"></a>OpenProcess</h4><p>Something that may trip you up is that some strings used in this injector are wide strings as opposed to ANSI. In wide strings, each character is allotted 2 bytes instead of one. Notice that <code>absolutePath</code> is set by <code>GetFullPathNameW</code> - the <code>W</code> at the end means that the returned path will be a wide string. If you are noticing strange behavior with you injector, ensure you are handling wide strings correctly. The <a href="https://docs.microsoft.com/en-us/windows/win32/api/winnt/nf-winnt-text" target="_blank" rel="noopener">TEXT()</a> macro can aid you in making sure you are using the correct encoding behind the scenes.</p>
+<pre class=" language-cpp"><code class="language-cpp">    <span class="token comment" spellcheck="true">//you must define BUFSIZE as a constant</span>
+    <span class="token keyword">constexpr</span> DWORD BUFSIZE <span class="token operator">=</span> <span class="token number">4096</span><span class="token punctuation">;</span>
+
+    TCHAR relativePath<span class="token punctuation">[</span>BUFSIZE<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">TEXT</span><span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    TCHAR absolutePath<span class="token punctuation">[</span>BUFSIZE<span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token function">TEXT</span><span class="token punctuation">(</span><span class="token string">""</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    SIZE_T absolutePathSize <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"\nHandle opened, please enter the desired DLL you wish to inject:\n"</span><span class="token punctuation">;</span>
+    std<span class="token operator">::</span>wcin <span class="token operator">>></span> relativePath<span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfullpathnamew</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">GetFullPathNameW</span><span class="token punctuation">(</span>relativePath<span class="token punctuation">,</span>
+         BUFSIZE<span class="token punctuation">,</span>
+         absolutePath<span class="token punctuation">,</span>
+         <span class="token constant">NULL</span><span class="token punctuation">)</span>
+        <span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Failed to find absolute path for %s"</span><span class="token punctuation">,</span> relativePath<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+    <span class="token keyword">else</span> <span class="token punctuation">{</span>
+        absolutePathSize <span class="token operator">=</span> <span class="token keyword">sizeof</span><span class="token punctuation">(</span>absolutePath<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token function">wprintf</span><span class="token punctuation">(</span>L<span class="token string">"Absolute path: %s, size: %d\n"</span><span class="token punctuation">,</span> absolutePath<span class="token punctuation">,</span> absolutePathSize<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+</code></pre>
+<h4 id="VirtualAllocEx"><a href="#VirtualAllocEx" class="headerlink" title="VirtualAllocEx"></a>VirtualAllocEx</h4><p>The memory allocation parameter (i.e. <code>MEM_COMMIT</code>) definitions can be found <a href="https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex#parameters" target="_blank" rel="noopener">here</a>.</p>
+<pre class=" language-cpp"><code class="language-cpp">    LPVOID bufferAddressInTargetProcess<span class="token punctuation">;</span>
+    <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"\nAttempting to allocate buffer of size %d in PID %d...\n"</span><span class="token punctuation">,</span> absolutePathSize<span class="token punctuation">,</span> PID<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-virtualallocex</span>
+    bufferAddressInTargetProcess <span class="token operator">=</span> <span class="token function">VirtualAllocEx</span><span class="token punctuation">(</span> processHandle<span class="token punctuation">,</span>
+                                                   <span class="token constant">NULL</span><span class="token punctuation">,</span>
+                                                   absolutePathSize<span class="token punctuation">,</span>
+                                                   MEM_COMMIT <span class="token operator">|</span> MEM_RESERVE<span class="token punctuation">,</span>
+                                                   PAGE_EXECUTE_READWRITE<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span>bufferAddressInTargetProcess<span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Failed to allocate buffer in PID %d\n"</span><span class="token punctuation">,</span> PID<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+</code></pre>
+<h4 id="WriteProcessMemory"><a href="#WriteProcessMemory" class="headerlink" title="WriteProcessMemory"></a>WriteProcessMemory</h4><pre class=" language-cpp"><code class="language-cpp">    <span class="token function">wprintf</span><span class="token punctuation">(</span>L<span class="token string">"Buffer allocated at address %#010x in target process\n\nAttempting to write absolute path to allocated buffer..."</span><span class="token punctuation">,</span> bufferAddressInTargetProcess<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// https://docs.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-writeprocessmemory</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token operator">!</span><span class="token function">WriteProcessMemory</span><span class="token punctuation">(</span> processHandle<span class="token punctuation">,</span>
+                             bufferAddressInTargetProcess<span class="token punctuation">,</span>
+                             absolutePath<span class="token punctuation">,</span>
+                             absolutePathSize<span class="token punctuation">,</span>
+                             <span class="token constant">NULL</span> <span class="token punctuation">)</span>
+        <span class="token punctuation">)</span> <span class="token punctuation">{</span>
+        <span class="token function">printf</span><span class="token punctuation">(</span><span class="token string">"Failed to write absolute path to allocated buffer at %d\n"</span><span class="token punctuation">,</span> bufferAddressInTargetProcess<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+</code></pre>
+<h4 id="GetModuleHandle-and-GetProcAddress"><a href="#GetModuleHandle-and-GetProcAddress" class="headerlink" title="GetModuleHandle and GetProcAddress"></a>GetModuleHandle and GetProcAddress</h4><p>You can pass the handle handle returned from <code>GetModuleHandle</code> directly into <code>GetProcAddress</code> as this is the only place that handle is used. No point in setting it to a variable.</p>
+<p><em>How come you can find the address of a function you need to call in your target process in the address space of your injector?</em></p>
+<p>The reason that you can call these functions in the address space of your injector instead of needing to do it in your target process is because you can expect the addresses of <code>LoadLibrary</code> to be the same in both processes - this is due to the way that Windows sets up its virtual addressing for processes and shared libraries. <a href="http://www.rohitab.com/discuss/topic/43233-question-about-memory-loaded-module-addresses/" target="_blank" rel="noopener">This forum thread</a> explains it more succinctly that I can, but once you have the offset of <code>LoadLibrary</code> in your injector’s address space, you can assume that it will be valid in your target process.</p>
+<p>Another “gotcha” to note here is that <code>GetProcAddress</code> returns a the address as type <code>FARPROC</code>, but our next call to <code>CreateRemoteThread</code> will require the address as type <code>LPTHREAD_START_ROUTINE</code>. Since these are both just addresses, you can cast the return value as a void pointer (<code>LPVOID</code>), and then recast it as necessary in the <code>CreateRemoteThread</code> call.</p>
+<pre class=" language-cpp"><code class="language-cpp">    LPVOID loadLibraryAddress<span class="token punctuation">;</span>
+    <span class="token comment" spellcheck="true">// https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getprocaddress</span>
+    <span class="token comment" spellcheck="true">// https://docs.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulehandlea</span>
+    loadLibraryAddress <span class="token operator">=</span> <span class="token punctuation">(</span>LPVOID<span class="token punctuation">)</span><span class="token function">GetProcAddress</span><span class="token punctuation">(</span> <span class="token function">GetModuleHandle</span><span class="token punctuation">(</span><span class="token function">TEXT</span><span class="token punctuation">(</span><span class="token string">"KERNEL32.DLL"</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+                                             <span class="token string">"LoadLibraryW"</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+</code></pre>
+<h4 id="CreateRemoteThread"><a href="#CreateRemoteThread" class="headerlink" title="CreateRemoteThread"></a>CreateRemoteThread</h4><p>Note the casting of <code>loadLibraryAddress</code>, as discussed in the step above!</p>
+<pre class=" language-cpp"><code class="language-cpp">    std<span class="token operator">::</span>cout <span class="token operator">&lt;&lt;</span> <span class="token string">"\nInjecting...\n"</span><span class="token punctuation">;</span>
+
+    HANDLE remoteThread<span class="token punctuation">;</span>
+
+    <span class="token comment" spellcheck="true">// https://docs.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createremotethread</span>
+    remoteThread <span class="token operator">=</span> <span class="token function">CreateRemoteThread</span><span class="token punctuation">(</span> processHandle<span class="token punctuation">,</span>
+                                       <span class="token constant">NULL</span><span class="token punctuation">,</span>
+                                       <span class="token number">0</span><span class="token punctuation">,</span>
+                                       <span class="token punctuation">(</span>LPTHREAD_START_ROUTINE<span class="token punctuation">)</span>loadLibraryAddress<span class="token punctuation">,</span>
+                                       bufferAddressInTargetProcess<span class="token punctuation">,</span>
+                                       <span class="token number">0</span><span class="token punctuation">,</span>
+                                       <span class="token constant">NULL</span>
+        <span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token function">WaitForSingleObject</span><span class="token punctuation">(</span>remoteThread<span class="token punctuation">,</span> INFINITE<span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+    <span class="token keyword">return</span> <span class="token number">0</span><span class="token punctuation">;</span>
+</code></pre>
+<p>And with that, you’ve done it! All thats left is to identify the PID of your target process (I pretty much always have <a href="https://processhacker.sourceforge.io/" target="_blank" rel="noopener">Process Hacker</a> open) and inject away!</p>
+<p><img src="/2020/04/19/Process-Injection-101-Hello-World/injected.png" alt="Injected!" title="Console Application Project in VS"></p>
+<p>Congrats, you have now run code in the address space of another process! In the next tutorial, we will explore some different ways to modify the behavior of the process you’ve injected into.</p>
+<p>You can find all of the components necessary to recreate this blog <a href="https://github.com/MayerDaniel/ProcessInjection/tree/master/101" target="_blank" rel="noopener">here</a>.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Process-Injection-How-To-Game-Hacking-C-Windows/">Process Injection, How-To, Game Hacking, C++, Windows</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2020/04/19/creating-an-imessage-chatbot/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          Creating an iMessage Chatbot
+        
+      </div>
+    </a>
+  
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  <div class="widget-wrap">
+    <h3 class="widget-title"><a href="/about">About</a></h3>
+  </div>
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Process-Injection/">Process Injection</a></li><li class="category-list-item"><a class="category-list-link" href="/categories/Projects/">Projects</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/04/">April 2020</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/2020/04/19/creating-an-imessage-chatbot/">Creating an iMessage Chatbot</a>
+          </li>
+        
+          <li>
+            <a href="/2020/04/19/Process-Injection-101-Hello-World/">Process Injection 101: Hello World</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020 Dan&#39;s Blog<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/js/script.js"></script>
+
+
+
+  </div>
+</body>
+</html>
