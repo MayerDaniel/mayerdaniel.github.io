@@ -1,23 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head><meta name="generator" content="Hexo 3.9.0">
+<head>
   <meta charset="utf-8">
   
 
   
   <title>Creating an iMessage Chatbot | Dan&#39;s Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="During my internship with CrowdStrike last summer, I was introduced to Hubot. Hubot is fun, in on all of the jokes, and exceedingly helpful. Between the automation of menial tasks and joke/novelty fun">
+  <meta name="description" content="During my internship with CrowdStrike last summer, I was introduced to Hubot. Hubot is fun, in on all of the jokes, and exceedingly helpful. Between the automation of menial tasks and joke&#x2F;novelty fun">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Creating an iMessage Chatbot">
 <meta property="og:url" content="http://mayerdaniel.github.io/2019/03/19/creating-an-imessage-chatbot/index.html">
 <meta property="og:site_name" content="Dan&#39;s Blog">
-<meta property="og:description" content="During my internship with CrowdStrike last summer, I was introduced to Hubot. Hubot is fun, in on all of the jokes, and exceedingly helpful. Between the automation of menial tasks and joke/novelty fun">
-<meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2020-04-20T01:12:11.460Z">
+<meta property="og:description" content="During my internship with CrowdStrike last summer, I was introduced to Hubot. Hubot is fun, in on all of the jokes, and exceedingly helpful. Between the automation of menial tasks and joke&#x2F;novelty fun">
+<meta property="og:locale">
+<meta property="article:published_time" content="2019-03-19T18:15:42.000Z">
+<meta property="article:modified_time" content="2020-04-20T01:12:11.460Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Creating an iMessage Chatbot">
-<meta name="twitter:description" content="During my internship with CrowdStrike last summer, I was introduced to Hubot. Hubot is fun, in on all of the jokes, and exceedingly helpful. Between the automation of menial tasks and joke/novelty fun">
   
     <link rel="alternate" href="/atom.xml" title="Dan&#39;s Blog" type="application/atom+xml">
   
@@ -25,9 +24,11 @@
     <link rel="icon" href="/favicon.png">
   
   
-  <link rel="stylesheet" href="/css/style.css">
-<link rel="stylesheet" href="/css/prism-cb.css" type="text/css"></head>
-</html>
+  
+<link rel="stylesheet" href="/css/style.css">
+
+<meta name="generator" content="Hexo 5.4.0"><link rel="stylesheet" href="/css/prism-cb.css" type="text/css"></head>
+
 <body>
   <div id="container">
     <div id="wrap">
@@ -72,11 +73,11 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>During my internship with <a href="https://crowdstrike.com" target="_blank" rel="noopener">CrowdStrike</a> last summer, I was introduced to <a href="https://hubot.github.com/" target="_blank" rel="noopener">Hubot</a>. Hubot is fun, in on all of the jokes, and exceedingly helpful. Between the automation of menial tasks and joke/novelty functions, our office chatbot was a mainstay in most threads of import.</p>
+        <p>During my internship with <a target="_blank" rel="noopener" href="https://crowdstrike.com/">CrowdStrike</a> last summer, I was introduced to <a target="_blank" rel="noopener" href="https://hubot.github.com/">Hubot</a>. Hubot is fun, in on all of the jokes, and exceedingly helpful. Between the automation of menial tasks and joke/novelty functions, our office chatbot was a mainstay in most threads of import.</p>
 <p>Seeing an opportutnity for a <em>lot</em> of novelty and a little automation, I desperately wanted my own personal chatbot - but I did not belong to any personal slacks or hipchats to put one in. The only messaging service I used on a regular basis was texting, so I set about constructing a framework for reading and writing iMessages.</p>
-<h3 id="Reading-Messages"><a href="#Reading-Messages" class="headerlink" title="Reading Messages"></a>Reading Messages</h3><p>A chatbot must be able to listen for incoming messages process them. Since apple <a href="https://stackoverflow.com/questions/28399777/read-sms-using-swift" target="_blank" rel="noopener">does not allow iOS apps to access messages stored on an iPhone</a>, the easiest way to field messages was to read the synced messages stored on my computer.</p>
+<h3 id="Reading-Messages"><a href="#Reading-Messages" class="headerlink" title="Reading Messages"></a>Reading Messages</h3><p>A chatbot must be able to listen for incoming messages process them. Since apple <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/28399777/read-sms-using-swift">does not allow iOS apps to access messages stored on an iPhone</a>, the easiest way to field messages was to read the synced messages stored on my computer.</p>
 <p>If you have iMessages synced to your Mac, all of the messages are stored in a SQLite database located at <code>~/Library/Messages/chat.db</code></p>
-<p>There is some work that has already been done with regards to reverse engineering the database structure and reading messages. The most helpful resource I found was <a href="https://github.com/mattrajca/pymessage-lite" target="_blank" rel="noopener">pymessage-lite</a>, which laid out the database structure*:</p>
+<p>There is some work that has already been done with regards to reverse engineering the database structure and reading messages. The most helpful resource I found was <a target="_blank" rel="noopener" href="https://github.com/mattrajca/pymessage-lite">pymessage-lite</a>, which laid out the database structure*:</p>
 <pre class=" language-bash"><code class="language-bash">_SqliteDatabaseProperties  deleted_messages         
 attachment                 handle                   
 chat                       message                  
@@ -90,9 +91,9 @@ chat_message_join
 <li><code>chat</code> keeps track of your conversation threads.</li>
 <li><code>message</code> keeps track of all messages along with their text contents, date, and the ID of the recipient.</li>
 </ul>
-<p>*Credit to <a href="https://github.com/mattrajca" target="_blank" rel="noopener">Matt Rajca</a></p>
+<p>*Credit to <a target="_blank" rel="noopener" href="https://github.com/mattrajca">Matt Rajca</a></p>
 <p>To read messages and respond to them, the pertinent information is the <strong>contents</strong> of the message, stored in <code>message</code>, and which <strong>conversation</strong> it came from, which is stored in <code>chat</code>. The two are linked by <code>chat_handle_join</code>.</p>
-<p>I use <a href="https://pythonhosted.org/watchdog/" target="_blank" rel="noopener">watchdog</a> to monitor the database for file changes (new messages) and the <code>sqlite3</code> python package to get the contents the new messages. Here is an excerpt from my iMessage processing library:</p>
+<p>I use <a target="_blank" rel="noopener" href="https://pythonhosted.org/watchdog/">watchdog</a> to monitor the database for file changes (new messages) and the <code>sqlite3</code> python package to get the contents the new messages. Here is an excerpt from my iMessage processing library:</p>
 <pre class=" language-python"><code class="language-python">LAST_READ <span class="token operator">=</span> <span class="token operator">-</span><span class="token number">1</span>
 
 <span class="token comment" spellcheck="true"># Fetches all messages exchanged with a given recipient.</span>
@@ -128,9 +129,9 @@ chat_message_join
 
     connection<span class="token punctuation">.</span>close<span class="token punctuation">(</span><span class="token punctuation">)</span>
 </code></pre>
-<p>The full file can be found <a href="https://github.com/MayerDaniel/edgar/blob/master/imessage.py" target="_blank" rel="noopener"><strong>HERE</strong></a></p>
+<p>The full file can be found <a target="_blank" rel="noopener" href="https://github.com/MayerDaniel/edgar/blob/master/imessage.py"><strong>HERE</strong></a></p>
 <p>Once all of the messages are in a neat array, a chatbot can use any number of language processing tools to consume commands and run the appropriate python code. <em>But</em>, how does it respond to those commands in iMessage?</p>
-<h3 id="Sending-Messages"><a href="#Sending-Messages" class="headerlink" title="Sending Messages"></a>Sending Messages</h3><p>There is no iMessage api to send messages through python, nor is there one for any language except for applescript. Thankfully, there is a commandline tool, <a href="https://ss64.com/osx/osascript.html" target="_blank" rel="noopener">osacscript</a>, which allows users to write and run arbitrary applescript commands. I used the <code>os</code> package in python to pipe the command into bash to run it. I based my command off of <a href="https://stackoverflow.com/questions/44852939/send-imessage-to-group-chat" target="_blank" rel="noopener">this stackoverflow question</a>, since it was the only command I could find which allowed sending messages to named groups.</p>
+<h3 id="Sending-Messages"><a href="#Sending-Messages" class="headerlink" title="Sending Messages"></a>Sending Messages</h3><p>There is no iMessage api to send messages through python, nor is there one for any language except for applescript. Thankfully, there is a commandline tool, <a target="_blank" rel="noopener" href="https://ss64.com/osx/osascript.html">osacscript</a>, which allows users to write and run arbitrary applescript commands. I used the <code>os</code> package in python to pipe the command into bash to run it. I based my command off of <a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/44852939/send-imessage-to-group-chat">this stackoverflow question</a>, since it was the only command I could find which allowed sending messages to named groups.</p>
 <p>Implementation:</p>
 <pre class=" language-python"><code class="language-python"><span class="token comment" spellcheck="true">#takes a message to send(string) and an imessage chat id to send it to(guid)</span>
 <span class="token keyword">def</span> <span class="token function">send_message</span><span class="token punctuation">(</span>self<span class="token punctuation">,</span> string<span class="token punctuation">,</span> guid<span class="token punctuation">)</span><span class="token punctuation">:</span>
@@ -148,7 +149,7 @@ chat_message_join
         os<span class="token punctuation">.</span>system<span class="token punctuation">(</span>body<span class="token punctuation">)</span>
 </code></pre>
 <p>And there you have it! Between reading and sending iMessages, a chatbot can now be created!</p>
-<p>See my full implementation <a href="https://github.com/MayerDaniel/edgar" target="_blank" rel="noopener"><strong>HERE</strong></a></p>
+<p>See my full implementation <a target="_blank" rel="noopener" href="https://github.com/MayerDaniel/edgar"><strong>HERE</strong></a></p>
 
       
     </div>
@@ -211,6 +212,10 @@ chat_message_join
       <ul>
         
           <li>
+            <a href="/2020/04/20/Process-Injection-102-VirtualProtect/">Process Injection 102: Altering Constants in Memory</a>
+          </li>
+        
+          <li>
             <a href="/2020/04/19/Process-Injection-101-Hello-World/">Process Injection 101: Hello World</a>
           </li>
         
@@ -231,7 +236,7 @@ chat_message_join
   
   <div class="outer">
     <div id="footer-info" class="inner">
-      &copy; 2020 Dan&#39;s Blog<br>
+      &copy; 2021 Dan&#39;s Blog<br>
       Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
@@ -249,11 +254,17 @@ chat_message_join
 <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
 
-  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
-  <script src="/fancybox/jquery.fancybox.pack.js"></script>
+  
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+
+  
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+
+
 
 
 <script src="/js/script.js"></script>
+
 
 
 
