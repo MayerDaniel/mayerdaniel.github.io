@@ -12,7 +12,7 @@
 <p>So there was no time or energy left for reverse engineering :(. But that means I get to make a blog for anyone to check out instead! And over the course of the jam I realized that Unity is a perfect place to start for game hacking/modding a few reasons:</p>
 <ul>
 <li>
-<p>Unity is that it is written in C#, a programming language for the .NET framework, which allows us to make use of <a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection">Reflection</a>, a very powerful tool built into .NET that allows for the introspection and manipulation of running processes - we will talk more about this further down.</p>
+<p>Unity is written in C#, a programming language for the .NET framework, which allows us to make use of <a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection">Reflection</a>, a very powerful tool built into .NET that allows for the introspection and manipulation of running processes - we will talk more about this further down.</p>
 </li>
 <li>
 <p>Compiled C# code also decompiles incredibly cleanly and with symbols, making Unity games a great place to start as well if you are interested in reverse engineering in general.</p>
@@ -220,8 +220,8 @@ FieldInfo ateField = snakeType.GetField(&quot;ate&quot;, flags);
 <p>Since the flags can be <code>OR</code>ed together and it doesn't matter if a variable <em>doesn't</em> have one of the attributes we set in the BindingFlags, we can cast a wide net and cover most of the types of variables we would encounter within a Unity object.</p>
 <pre><code class="language-cs">// Cast a wide net with our BindingFlags to catch most variables we would run into. Scope this down as needed.
 // https://learn.microsoft.com/en-us/dotnet/api/system.reflection.bindingflags?redirectedfrom=MSDN&amp;view=net-7.0
- BindingFlags flags = BindingFlags.Instance 
-        | BindingFlags.Public 
+ BindingFlags flags = BindingFlags.Instance
+        | BindingFlags.Public
 		| BindingFlags.NonPublic
         | BindingFlags.Static;
 </code></pre>
