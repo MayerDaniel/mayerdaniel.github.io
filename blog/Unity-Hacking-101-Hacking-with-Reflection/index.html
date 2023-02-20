@@ -175,7 +175,7 @@ public void OnGUI()
 <p>Build your Visual Studio project and take note of the filepath of the built DLL. We will need to feed this to SharpMonoInjector, along with the namespace, class, and function name of our loader class within the loader boilerplate code we made.</p>
 <h2>Testing out the injector</h2>
 <p>Open a command prompt and navigate to the directory you downloaded SharpMonoInjector to and run it without arguments to see its help statement:</p>
-<pre><code> .\smi.exe
+<pre><code class="language-console"> .\smi.exe
 SharpMonoInjector 2.2
 
 Usage:
@@ -189,7 +189,7 @@ Options:
 -m - The name of the method to invoke in the loader class
 </code></pre>
 <p>Now, run snake, then alt-tab to the command line window and inject your DLL. For our game, your injection command will look something like this:</p>
-<pre><code> .\smi.exe inject -p snake -a &lt;path to built DLL&gt; -n cheat -c Loader -m Load
+<pre><code class="language-console"> .\smi.exe inject -p snake -a &lt;path to built DLL&gt; -n cheat -c Loader -m Load
 </code></pre>
 <p>If the injection is successful, SharpMonoInjector will print of the offset of the injected DLL. You will also see your UI show up in the game of snake. If this fails, try running the command again from an elevated command prompt. Sometimes Microsoft Defender also doesn't like process injection tools since a lot of malware uses process injection. You can try turning off Defender as well if it still isn't working and that doesn't skeeve you out. If all goes well you should see something like this in-game:</p>
 <p><img src="hacked.png" alt="Hacked!" /></p>
@@ -206,7 +206,7 @@ Options:
 <pre><code class="language-cs">// Create a &quot;Type&quot; object for the type &quot;Snake&quot;
 Type snakeType = snake.GetType();
 </code></pre>
-<p>Now let's flip our snake's <code>ate</code> field to true. We will use reflection to create a <code>FieldInfo</code> object for the specific <code>ate</code> field within the <code>Snake</code> object. We create this info object by calling the <code>GetField</code> method of our new <code>snakeType</code> object.</p>
+<p>Now let's flip our snake's <code>ate</code> field to true. We will use reflection to create a <code>FieldInfo</code> object for the specific <code>ate</code> field within the <code>Snake</code> object.</p>
 <pre><code class="language-cs">// Use System.Reflection.FieldInfo object to discover the attributes of the field and provide access to its metadata
 // https://learn.microsoft.com/en-us/dotnet/api/system.reflection.fieldinfo?view=net-7.0
 FieldInfo ateField = snakeType.GetField(&quot;ate&quot;, flags);
@@ -222,9 +222,9 @@ FieldInfo ateField = snakeType.GetField(&quot;ate&quot;, flags);
 <pre><code class="language-cs">// Cast a wide net with our BindingFlags to catch most variables we would run into. Scope this down as needed.
 // https://learn.microsoft.com/en-us/dotnet/api/system.reflection.bindingflags?redirectedfrom=MSDN&amp;view=net-7.0
  BindingFlags flags = BindingFlags.Instance
-        | BindingFlags.Public
+ 		| BindingFlags.Public
 		| BindingFlags.NonPublic
-        | BindingFlags.Static;
+		| BindingFlags.Static;
 </code></pre>
 <p>If you encounter a class with both a public and private variable of the same name or some other sort of collision, scope this down as needed. But usually it is ok to just yolo it.</p>
 <p>The syntax of altering a field within an object using reflection is a bit strange. The <code>FieldInfo</code> object is actually what has the method to do so. The <code>SetValue</code> method takes two arguments: an object that contains the field and the value you want to set the field to be. For us this is the value <code>true</code>.</p>
@@ -289,7 +289,7 @@ namespace hax
     <source src="addtail.webm" type="video/webm">
 </video>
 <p>Well done! You have hacked your first Unity game.</p>
-<p>While I have you though I may as well show you how to call functions as well. There is a <code>System.Reflection.MethodInfo</code> function that works similarly to <code>FieldInfo</code>, which you get by feeding the Type object's <code>GetMethod</code> function with a string of the function name and a BindingFlags object. You can then call the MethodInfo object's <code>Invoke</code> method for a given object and any arguments it needs. In this case there are no arguments so we just pass <code>null</code>.</p>
+<p>While I have you though I may as well show you how to call functions as well. There is a <code>System.Reflection.MethodInfo</code> function that works similarly to <code>FieldInfo</code>. You can then call the MethodInfo object's <code>Invoke</code> method for a given object and any arguments it needs. In this case there are no arguments so we just pass <code>null</code>.</p>
 <pre><code>// MethodInfo/GetMethod is pretty much the same as FieldInfo/GetField for targeting methods in instantiated objects
 MethodInfo dynMethod = snakeType.GetMethod(&quot;Move&quot;, flags);
 // Call the &quot;Move&quot; method in our Snake object with no arguments
