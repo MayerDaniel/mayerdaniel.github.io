@@ -4,7 +4,7 @@
 <link rel="stylesheet" href="/css/site.css">
 <h1>Unity Hacking 101: Hacking with Reflection</h1>
 <p><em>This tutorial is for Windows machines and intended to be followed step-by-step. Associated materials can be found on GitHub <a href="https://github.com/MayerDaniel/UnityHacking">HERE</a></em>.</p>
-<p><em>This tutorial is pretty verbose and details a lot of gotchas I encountered using Visual Studio and Unity for the first time. If you just want to learn about how to access game objects at runtime using reflection, <a href="#adding-the-tail-using-reflection">skip to the end</a>.</em></p>
+<p><em>This tutorial is pretty verbose and details a lot of gotchas I encountered using Visual Studio and Unity for the first time. If you just want to learn about how to access game objects at runtime using reflection, <a href="#interestingbit">skip to the end</a>.</em></p>
 <h2>Intro</h2>
 <p>I recently participated in the <a href="https://globalgamejam.org/">Global Game Jam</a> at the <em>very</em> cool developer collective <a href="https://glitch.city/">Glitch City</a>, where I spent 48 hours creating a game in Unity with a team of gamedev professionals and a few novices like me. My contributions were modest and filled with spaghetti but with the help of the great game programmers on my team, I got a much better understanding of the basics of how the engine works.</p>
 <p>During the jam, I chatted a bit with the developers on my team about my day job as a malware reverse engineer. I said that end the end of the jam we could take our game apart together as a little bit of a skill share in repayment for the wealth of Unity knowledge they were imparting on me during the jam. Well, if you know anything about how game jams go, the end was frantic (but fun!), and generally felt like this:</p>
@@ -194,6 +194,7 @@ Options:
 <p>If the injection is successful, SharpMonoInjector will print of the offset of the injected DLL. You will also see your UI show up in the game of snake. If this fails, try running the command again from an elevated command prompt. Sometimes Microsoft Defender also doesn't like process injection tools since a lot of malware uses process injection. You can try turning off Defender as well if it still isn't working and that doesn't skeeve you out. If all goes well you should see something like this in-game:</p>
 <p><img src="hacked.png" alt="Hacked!" /></p>
 <p>If you see that box in the game, it means you have successfully achieved code execution in the Unity game. Well done. Now let's add that tail!</p>
+<div id="interestingbit"></div>
 <h3>Adding the tail using reflection</h3>
 <p>Reflection is useful for accessing and manipulating instantiated objects at runtime. Unity also has some great built-in functions for this. We will use both for implementing our function to add a tail square.</p>
 <p>First lets get our snake object that has been instantiated. Unity has a function <code>GameObject.FindObjectOfType&lt;T&gt;</code> for this exact purpose.</p>
