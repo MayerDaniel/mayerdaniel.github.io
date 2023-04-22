@@ -2,6 +2,20 @@
 <script src="/js/highlight.min.js"></script>
 <script>hljs.highlightAll();</script>
 <link rel="stylesheet" href="/css/site.css">
+<div id="header" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 50%; display: table-cell; padding-top: 1ch;">
+            <a href="/">Home</a>
+						<a href="/blog">Blog</a>
+						<a href="/about">About</a>
+        </div>
+        <div style="display: table-cell; text-align: right; width: 50%; padding-top: 1ch;">
+            <a href="https://twitter.com/dan__mayer">Twitter</a>
+						<a href="https://github.com/MayerDaniel">GitHub</a>
+						<a href="https://www.linkedin.com/in/daniel-w-mayer/">LinkedIn<a>
+        </div>
+    </div>
+</div>
 <h1>Creating an iMessage Chatbot</h1>
 <p>During my internship with <a href="https://crowdstrike.com">CrowdStrike</a> last summer, I was introduced to <a href="https://hubot.github.com/">Hubot</a>. Hubot is fun, in on all of the jokes, and exceedingly helpful. Between the automation of menial tasks and joke/novelty functions, our office chatbot was a mainstay in most threads of import.</p>
 <p>Seeing an opportutnity for a <em>lot</em> of novelty and a little automation, I desperately wanted my own personal chatbot - but I did not belong to any personal slacks or hipchats to put one in. The only messaging service I used on a regular basis was texting, so I set about constructing a framework for reading and writing iMessages.</p>
@@ -82,3 +96,10 @@ def send_message(self, string, guid):
 </code></pre>
 <p>And there you have it! Between reading and sending iMessages, a chatbot can now be created!</p>
 <p>See my full implementation <a href="https://github.com/MayerDaniel/edgar"><strong>HERE</strong></a></p>
+<div id="header" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 100%; display: table-cell; padding: 1ch; text-align: center;">
+            <a href="..">Back</a>
+        </div>
+    </div>
+</div>

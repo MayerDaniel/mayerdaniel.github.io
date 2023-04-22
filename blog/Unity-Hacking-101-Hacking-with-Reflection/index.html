@@ -2,6 +2,20 @@
 <script src="/js/highlight.min.js"></script>
 <script>hljs.highlightAll();</script>
 <link rel="stylesheet" href="/css/site.css">
+<div id="header" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 50%; display: table-cell; padding-top: 1ch;">
+            <a href="/">Home</a>
+						<a href="/blog">Blog</a>
+						<a href="/about">About</a>
+        </div>
+        <div style="display: table-cell; text-align: right; width: 50%; padding-top: 1ch;">
+            <a href="https://twitter.com/dan__mayer">Twitter</a>
+						<a href="https://github.com/MayerDaniel">GitHub</a>
+						<a href="https://www.linkedin.com/in/daniel-w-mayer/">LinkedIn<a>
+        </div>
+    </div>
+</div>
 <h1>Unity Hacking 101: Hacking with Reflection</h1>
 <p><em>This tutorial is for Windows machines and intended to be followed step-by-step. Associated materials can be found on GitHub <a href="https://github.com/MayerDaniel/UnityHacking">HERE</a></em>.</p>
 <p><em>This tutorial is pretty verbose and details a lot of gotchas I encountered using Visual Studio and Unity for the first time. If you just want to learn about how to access game objects at runtime using reflection, <a href="#interestingbit">skip to the end</a>.</em></p>
@@ -298,3 +312,10 @@ dynMethod.Invoke(snake, null);
 <p>You can now use this knowledge to play around with other Unity games, like modifying MTGA to let you open up the developer menu (don't worry MTGA is server-side authoritative so theres no cheating here).</p>
 <p><img src="mtga.png" alt="MTGA" /></p>
 <p>I hope you had fun! If anything doesn't work you can always check out the materials on GitHub <a href="https://github.com/MayerDaniel/UnityHacking/tree/main/101">HERE</a></p>
+<div id="header" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 100%; display: table-cell; padding: 1ch; text-align: center;">
+            <a href="..">Back</a>
+        </div>
+    </div>
+</div>

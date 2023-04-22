@@ -2,6 +2,20 @@
 <script src="/js/highlight.min.js"></script>
 <script>hljs.highlightAll();</script>
 <link rel="stylesheet" href="/css/site.css">
+<div id="header" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 50%; display: table-cell; padding-top: 1ch;">
+            <a href="/">Home</a>
+						<a href="/blog">Blog</a>
+						<a href="/about">About</a>
+        </div>
+        <div style="display: table-cell; text-align: right; width: 50%; padding-top: 1ch;">
+            <a href="https://twitter.com/dan__mayer">Twitter</a>
+						<a href="https://github.com/MayerDaniel">GitHub</a>
+						<a href="https://www.linkedin.com/in/daniel-w-mayer/">LinkedIn<a>
+        </div>
+    </div>
+</div>
 <h1>Process Injection 101: Hello World</h1>
 <p><em>The accompanying source files for this blog post are on <a href="https://github.com/MayerDaniel/ProcessInjection/tree/master/101">GitHub</a>.</em></p>
 <p>Process injection is the act of writing arbitrary code into an already-running process and executing it. It is used frequently by red teamers, malware authors, and game hackers because it is a powerful detection evasion technique, can gain you read/write/execute access to sensitive information residing in the target process, and allows you to alter that process's behavior. As a reverse engineer, I have looked at quite a few process injection techniques, and <em>loosely</em> understand how they work, but I have never had to implement one.</p>
@@ -237,3 +251,10 @@ BOOL APIENTRY DllMain( HMODULE hModule,
 <p><img src="injected.png" alt="Injected!" title="Console Application Project in VS" /></p>
 <p>Congrats, you have now run code in the address space of another process! In the <a href="https://www.mayer.cool/2020/04/20/Process-Injection-102-VirtualProtect/">next tutorial</a>, explore how to modify the behavior of the process you've injected into.</p>
 <p>You can find all of the components necessary to recreate this blog <a href="https://github.com/MayerDaniel/ProcessInjection/tree/master/101">here</a>.</p>
+<div id="header" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 100%; display: table-cell; padding: 1ch; text-align: center;">
+            <a href="..">Back</a>
+        </div>
+    </div>
+</div>

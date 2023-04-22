@@ -2,6 +2,20 @@
 <script src="/js/highlight.min.js"></script>
 <script>hljs.highlightAll();</script>
 <link rel="stylesheet" href="/css/site.css">
+<div id="header" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 50%; display: table-cell; padding-top: 1ch;">
+            <a href="/">Home</a>
+						<a href="/blog">Blog</a>
+						<a href="/about">About</a>
+        </div>
+        <div style="display: table-cell; text-align: right; width: 50%; padding-top: 1ch;">
+            <a href="https://twitter.com/dan__mayer">Twitter</a>
+						<a href="https://github.com/MayerDaniel">GitHub</a>
+						<a href="https://www.linkedin.com/in/daniel-w-mayer/">LinkedIn<a>
+        </div>
+    </div>
+</div>
 <h1>Process Injection 102: VirtualProtect</h1>
 <p><em>This blog post is a continuation of a series on Process Injection. To see part one click <a href="../Process-Injection-101-Hello-World/">here</a>!</em></p>
 <p><em>The accompanying source files for this blog post are on <a href="https://github.com/MayerDaniel/ProcessInjection/tree/master/102">GitHub</a>.</em></p>
@@ -75,3 +89,10 @@ LPVOID stringAddress = LPVOID(stringAddr);
 <p>Voila! You should be able to see the print statement now change when you inject your DLL into <code>HelloWorld.exe</code>:</p>
 <p><img src="injected.png" alt="Injected!" title="Injected!" /></p>
 <p>As always you can check out the source for a completed payload on <a href="https://github.com/MayerDaniel/ProcessInjection/tree/master/102">GitHub</a> if you run into trouble.</p>
+<div id="header" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 100%; display: table-cell; padding: 1ch; text-align: center;">
+            <a href="..">Back</a>
+        </div>
+    </div>
+</div>
