@@ -1,12 +1,18 @@
 body {
 		background-color: rgb(253,252,247);
 		font-family: Georgia;
-		margin-left: 5%;
-		margin-right: 5%;
-		margin-top: 10px;
+		font-size: 18px;
 		max-width: 85ch;
+		padding: 10px;
 		margin: 0 auto;
 		float: none;
+}
+
+@media only screen and (max-device-width: 600px) {
+        body {
+					-webkit-text-size-adjust:100%;
+					font-size: 34px;
+				}
 }
 
 img {
