@@ -1,0 +1,42 @@
+<link rel="stylesheet" href="/css/site.css">
+<div id="header" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 50%; display: table-cell; padding-top: 1ch;">
+            <a href="/">Home</a>
+						<a href="/writings">Writings</a>
+						<a href="/about">About</a>
+        </div>
+        <div style="display: table-cell; text-align: right; width: 50%; padding-top: 1ch;">
+            <a href="https://twitter.com/dan__mayer">Twitter</a>
+						<a href="https://github.com/MayerDaniel">GitHub</a>
+						<a href="https://www.linkedin.com/in/daniel-w-mayer/">LinkedIn<a>
+        </div>
+    </div>
+</div>
+<h1>I Hacked Magic the Gathering: Arena for a 100% Winrate</h1>
+<h2>TLDR</h2>
+<p>I could make opponents concede at will so that I never lost</p>
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Hey <a href="https://twitter.com/MTG_Arena?ref_src=twsrc%5Etfw">@MTG_Arena</a> I figured out how to make an opponent auto-concede the game. Let me know how you&#39;d like me to report the issue and I will send over the source + an explanation of how it can be mitigated. Thank you! <a href="https://t.co/dWMdkKjOA2">pic.twitter.com/dWMdkKjOA2</a></p>&mdash; Daniel Mayer (@dan__mayer) <a href="https://twitter.com/dan__mayer/status/1641669864460009472?ref_src=twsrc%5Etfw">March 31, 2023</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<h2>How</h2>
+<p>Card games are usually pretty tough targets for game hacks because they are turn based and not a lot of information needs to move between the client and the server. This means that card games are excellent candidates for being 100% server-side authoritative, meaning that the server keeps track of the entire game state and only tells the client what it needs to know. Unlike in a fast-paced shooter where the opponent team's models may need to be loaded before you can see them (allowing for wallhacks), or computationally heavy routines like player movement may be offloaded to the client to save resources (allowing for speedhacks), card games are relatively low computation and the information boundaries are concrete. All a player can really do is play cards, and read the board state.</p>
+<p>This means the client will do very little work itself and it will only be given information about an opponents' cards as the cards are played. Unrevealed information such as a player's hand or deck never exists locally so they cannot be read, and the actions a player can take are limited so the client does not need to be trusted and the logic to detect invalid potential invalid actions, like playing a card not in your hand are easy. That said, just because the logic to detect invalid actions are simple, does not mean that they are implemented. So I set about figuring out how to test them.</p>
+<h3>The Basics of Online Game Hacking</h3>
+<p>For any game the communicates with a server, your best bet is to skip straight</p>
+<div id="footer" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 100%; display: table-cell; padding: 1ch; text-align: center;">
+            <a href="..">Back</a>
+        </div>
+    </div>
+</div>
+
+<div id="webrings" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 50%; display: table-cell; padding-top: 1ch;">
+            <a href='https://mayerdotcool.123guestbook.com/'>Sign My Guestbook</a>
+        </div>
+        <div style="display: table-cell; width: 50%; padding-top: 1ch; padding-bottom: 1ch;">
+            <a href='https://webring.recurse.com'"><img src='/recurse.png' width='30' alt='Recurse Center Webring' style="margin: 0; float:right;"></a>
+        </div>
+    </div>
+</div>

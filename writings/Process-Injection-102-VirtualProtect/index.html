@@ -1,19 +1,38 @@
-<p><em>This blog post is a continuation of a series on Process Injection. To see all posts in the series, click <a href="https://www.mayer.cool/categories/Process-Injection/">here</a>!</em></p>
+<link rel="stylesheet" href="/css/highlight.css">
+<script src="/js/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+<link rel="stylesheet" href="/css/site.css">
+<div id="header" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 50%; display: table-cell; padding-top: 1ch;">
+            <a href="/">Home</a>
+						<a href="/writings">Writings</a>
+						<a href="/about">About</a>
+        </div>
+        <div style="display: table-cell; text-align: right; width: 50%; padding-top: 1ch;">
+            <a href="https://twitter.com/dan__mayer">Twitter</a>
+						<a href="https://github.com/MayerDaniel">GitHub</a>
+						<a href="https://www.linkedin.com/in/daniel-w-mayer/">LinkedIn<a>
+        </div>
+    </div>
+</div>
+<h1>Process Injection 102: VirtualProtect</h1>
+<p><em>This blog post is a continuation of a series on Process Injection. To see part one click <a href="../Process-Injection-101-Hello-World/">here</a>!</em></p>
 <p><em>The accompanying source files for this blog post are on <a href="https://github.com/MayerDaniel/ProcessInjection/tree/master/102">GitHub</a>.</em></p>
 <p>Now that you have successfully run code in the address space of another process, it is time to make that actually code do something. Since <code>HelloWorld.exe</code> just prints <code>Hello World!</code> over and over again, let's change the string being printed.</p>
 <h2>Finding offsets</h2>
 <p><em>While not necessary to follow this blog, it is useful to understand a little bit about Portable Executable (PE) files, which is the file format of Windows Executable files. The microsoft docs are <a href="https://docs.microsoft.com/en-us/windows/win32/debug/pe-format">here</a>, and <a href="https://github.com/corkami/pics/blob/master/binary/pe101/README.md">Corkami</a> has some great visual resources.</em></p>
 <p>Fire up 32-bit x64dbg and open up <code>HelloWorld.exe</code> (you can just drag it in), and hit run. x64dbg will stop at the entry point for you.</p>
-<p><img src="Process-Injection-102-VirtualProtect/entry.png" alt="EntryPoint" title="EntryPoint" /></p>
+<p><img src="entry.png" alt="EntryPoint" title="EntryPoint" /></p>
 <p>At this point you are done debugging 😄 press run again to allow the <code>HelloWorld.exe</code> to execute (The bottom left corner should say <code>Running</code>).</p>
 <p>Open up the <code>Memory Map</code> tab and and press <code>ctrl+b</code>. A search window will pop up, allowing you to search for values in memory. Input <code>Hello World!</code> in the <code>ASCII</code> field:</p>
-<p><img src="Process-Injection-102-VirtualProtect/search.png" alt="Search" title="Search" /></p>
+<p><img src="search.png" alt="Search" title="Search" /></p>
 <p>After searching, one result should be returned - this is address of the string you want to change:</p>
-<p><img src="Process-Injection-102-VirtualProtect/result.png" alt="Search Result" title="Search Result" /></p>
+<p><img src="result.png" alt="Search Result" title="Search Result" /></p>
 <p><strong>NOTE</strong>: The address you see will likely be different than the screenshot above! This is due to <a href="https://en.wikipedia.org/wiki/Address_space_layout_randomization">Address Space Layout Randomization (ASLR)</a>. ASLR randomizes the base address of <code>HelloWorld.exe</code>, but the offset of your target string from the base address <code>HelloWorld.exe</code> in memory will always be the same.</p>
 <p>With this knowledge, note the address of the target string, in this example it is <code>0x0107CB30</code>. Then return to the memory map and note the base address of  <code>HelloWorld.exe</code>, in this case it is <code>0x01060000</code>. The difference of <code>0x0107CB30 - 0x01060000 = 0x1CB30</code> gives you the offset of your target string. This offset will not change.</p>
 <p>One more characteristic to note is that your target string is in a read-only portion of memory. The payload will have to account for this:</p>
-<p><img src="Process-Injection-102-VirtualProtect/rdata.png" alt="Read-Only Data" title="Read-Only Data" /></p>
+<p><img src="rdata.png" alt="Read-Only Data" title="Read-Only Data" /></p>
 <h2>Creating the payload</h2>
 <p>Create a new DLL in Visual Studio like you did in <a href="https://www.mayer.cool/2020/04/19/Process-Injection-101-Hello-World/#Creating-the-payload-DLL">101</a>. This payload will only require 4 API calls to overwrite your target string:</p>
 <ul>
@@ -68,5 +87,23 @@ LPVOID stringAddress = LPVOID(stringAddr);
         }
 </code></pre>
 <p>Voila! You should be able to see the print statement now change when you inject your DLL into <code>HelloWorld.exe</code>:</p>
-<p><img src="Process-Injection-102-VirtualProtect/injected.png" alt="Injected!" title="Injected!" /></p>
+<p><img src="injected.png" alt="Injected!" title="Injected!" /></p>
 <p>As always you can check out the source for a completed payload on <a href="https://github.com/MayerDaniel/ProcessInjection/tree/master/102">GitHub</a> if you run into trouble.</p>
+<div id="footer" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 100%; display: table-cell; padding: 1ch; text-align: center;">
+            <a href="..">Back</a>
+        </div>
+    </div>
+</div>
+
+<div id="webrings" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 50%; display: table-cell; padding-top: 1ch;">
+            <a href='https://mayerdotcool.123guestbook.com/'>Sign My Guestbook</a>
+        </div>
+        <div style="display: table-cell; width: 50%; padding-top: 1ch; padding-bottom: 1ch;">
+            <a href='https://webring.recurse.com'"><img src='/recurse.png' width='30' alt='Recurse Center Webring' style="margin: 0; float:right;"></a>
+        </div>
+    </div>
+</div>

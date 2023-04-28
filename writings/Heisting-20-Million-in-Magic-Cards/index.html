@@ -6,7 +6,7 @@
     <div style="display: table-row;">
         <div style="width: 50%; display: table-cell; padding-top: 1ch;">
             <a href="/">Home</a>
-						<a href="/blog">Blog</a>
+						<a href="/writings">Writings</a>
 						<a href="/about">About</a>
         </div>
         <div style="display: table-cell; text-align: right; width: 50%; padding-top: 1ch;">
@@ -29,7 +29,7 @@
 <p>Digital trading card games have put nerds in a bind. With physical TCGs, we used to be able to convince our life partners, and ourselves, that in some vague way we were really &quot;investing&quot; in collectibles that could be liquidated if needed. In recent years, though, digital card games like Hearthstone and its ilk have laid the facts bare for all to see: us card-game nerds are just gambling addicts with extra steps. It is about the rush of opening the packs, baby! Not ownership of the cards.</p>
 <p>Games like Magic: The Gathering Arena (MTGA) and Hearthstone are still massively popular and huge financial successes without any illusion of scarcity or value in a secondary market. The cards &quot;owned&quot; and &quot;opened&quot; by each account are all just numbers in a database somewhere. That change in ownership model is a double-edged sword though. Us nerds can change numbers in a database a lot more easily than we can rob a board game shop. So, let's take advantage of that!</p>
 <h2>Casing the joint</h2>
-<p>MTGA is a Unity game, meaning that it is written in C#. C# decompiles extremely cleanly, making reverse engineering and manipulating the game logic a breeze. I covered this in more of a how-to format in <a href="/blog/Unity-Hacking-101-Hacking-with-Reflection/">my last post</a>, so I will skip it here and just get to the interesting part. Looking at the purchasing logic for in-game store items, the following function is used by the game to submit a purchase request using in-game currency:</p>
+<p>MTGA is a Unity game, meaning that it is written in C#. C# decompiles extremely cleanly, making reverse engineering and manipulating the game logic a breeze. I covered this in more of a how-to format in <a href="/writings/Unity-Hacking-101-Hacking-with-Reflection/">my last post</a>, so I will skip it here and just get to the interesting part. Looking at the purchasing logic for in-game store items, the following function is used by the game to submit a purchase request using in-game currency:</p>
 <pre><code class="language-cs">...
 // PurchaseV2Req is essentially a JSON dictionary that later 
 // gets marshalled and sent to the game server to make a purchase
@@ -184,6 +184,17 @@ PurchaseV2Req request = purchaseV2Req;
     <div style="display: table-row;">
         <div style="width: 100%; display: table-cell; padding: 1ch; text-align: center;">
             <a href="..">Back</a>
+        </div>
+    </div>
+</div>
+
+<div id="webrings" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 50%; display: table-cell; padding-top: 1ch;">
+            <a href='https://mayerdotcool.123guestbook.com/'>Sign My Guestbook</a>
+        </div>
+        <div style="display: table-cell; width: 50%; padding-top: 1ch; padding-bottom: 1ch;">
+            <a href='https://webring.recurse.com'"><img src='/recurse.png' width='30' alt='Recurse Center Webring' style="margin: 0; float:right;"></a>
         </div>
     </div>
 </div>

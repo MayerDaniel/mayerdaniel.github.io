@@ -6,7 +6,7 @@
     <div style="display: table-row;">
         <div style="width: 50%; display: table-cell; padding-top: 1ch;">
             <a href="/">Home</a>
-						<a href="/blog">Blog</a>
+						<a href="/writings">Writings</a>
 						<a href="/about">About</a>
         </div>
         <div style="display: table-cell; text-align: right; width: 50%; padding-top: 1ch;">
@@ -23,7 +23,7 @@
 <p>I recently participated in the <a href="https://globalgamejam.org/">Global Game Jam</a> at the <em>very</em> cool developer collective <a href="https://glitch.city/">Glitch City</a>, where I spent 48 hours creating a game in Unity with a team of gamedev professionals and a few novices like me. My contributions were modest and filled with spaghetti but with the help of the great game programmers on my team, I got a much better understanding of the basics of how the engine works.</p>
 <p>During the jam, I chatted a bit with the developers on my team about my day job as a malware reverse engineer. I said that at the end of the jam we could take our game apart together as a little bit of a skill share in repayment for the wealth of Unity knowledge they were imparting on me during the jam. Well, if you know anything about how game jams go, the end was frantic (but fun!), and generally felt like this:</p>
 <p><img src="jam.jpg" alt="The jam" /></p>
-<p>So there was no time or energy left for reverse engineering :(. But that means I get to make a blog for anyone to check out instead! And over the course of the jam I realized that Unity is a perfect place to start for game hacking/modding a few reasons:</p>
+<p>So there was no time or energy left for reverse engineering :(. But that means I get to make a tutorial for anyone to check out instead! And over the course of the jam I realized that Unity is a perfect place to start for game hacking/modding a few reasons:</p>
 <ul>
 <li>
 <p>Unity is written in C#, a programming language for the .NET framework, which allows us to make use of <a href="https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/concepts/reflection">Reflection</a>, a very powerful tool built into .NET that allows for the introspection and manipulation of running processes - we will talk more about this further down.</p>
@@ -84,7 +84,7 @@ public class Snake : MonoBehaviour
 </code></pre>
 <p>Ok, so it is a boolean, and it is a private variable belonging to the class <code>Snake</code>. &quot;Oh no!&quot; you might say - &quot;that means that no function outside the <code>Snake</code> class can access that class! This tutorial is over!&quot; to which I say, cut the histrionics! Where there is a will there's a way. And that way is reflection!</p>
 <h2>Reflection is the coolest part of .NET</h2>
-<p>Now,  in a game compiled in C, we would probably just find the struct of our instantiated <code>Snake</code> object once the game starts, then flip the bit associated with the <code>ate</code> boolean to true. Which is very cool and hackery and you can check out my other tutorial on <a href="/blog/Process-Injection-102-VirtualProtect">finding and altering offsets in memory</a> to see how to do something like that. But in .NET you can do something even cooler and hackery-er. You can write code that finds, reads, and alters instantiated objects as a built-in feature of .NET!</p>
+<p>Now,  in a game compiled in C, we would probably just find the struct of our instantiated <code>Snake</code> object once the game starts, then flip the bit associated with the <code>ate</code> boolean to true. Which is very cool and hackery and you can check out my other tutorial on <a href="/writings/Process-Injection-102-VirtualProtect">finding and altering offsets in memory</a> to see how to do something like that. But in .NET you can do something even cooler and hackery-er. You can write code that finds, reads, and alters instantiated objects as a built-in feature of .NET!</p>
 <p>Using reflection, our basic game plan will be this:</p>
 <ol>
 <li>Get code execution into the snake game at runtime through process injection.</li>
@@ -104,7 +104,7 @@ public class Snake : MonoBehaviour
 <p>When clicking through the options of creating your project, ensure that on the &quot;Additional Information&quot; page you select the target framework to be &quot;.NET Standard 2.1&quot;, as this is the .NET profile that Unity supports by default, and will be the profile of our snake game.</p>
 <p><img src="standard.png" alt="Standard" /></p>
 <h3>Loader Boilerplate</h3>
-<p>Now, we will create our boiler plate loader. This is the class expected by our injector, and it mainly just creates a class from another namespace we will define and put all of our cheat logic in. This boilerplate is from a great primer on Unity hacking posted on Unknown Cheats <a href="https://www.unknowncheats.me/forum/unity/285864-beginners-guide-hacking-unity-games.html">HERE</a> - which was a really great resource for me. Honestly most of this blog post is redundant information from that post except for how to use reflection. Anyway, here's the boilerplate:</p>
+<p>Now, we will create our boiler plate loader. This is the class expected by our injector, and it mainly just creates a class from another namespace we will define and put all of our cheat logic in. This boilerplate is from a great primer on Unity hacking posted on Unknown Cheats <a href="https://www.unknowncheats.me/forum/unity/285864-beginners-guide-hacking-unity-games.html">HERE</a> - which was a really great resource for me. Honestly most of this post is redundant information from that post except for how to use reflection. Anyway, here's the boilerplate:</p>
 <pre><code class="language-cs">using System;
 // We will import this straight from the game files!
 using UnityEngine;
@@ -316,6 +316,17 @@ dynMethod.Invoke(snake, null);
     <div style="display: table-row;">
         <div style="width: 100%; display: table-cell; padding: 1ch; text-align: center;">
             <a href="..">Back</a>
+        </div>
+    </div>
+</div>
+
+<div id="webrings" style="width: 100%; display: table;">
+    <div style="display: table-row;">
+        <div style="width: 50%; display: table-cell; padding-top: 1ch;">
+            <a href='https://mayerdotcool.123guestbook.com/'>Sign My Guestbook</a>
+        </div>
+        <div style="display: table-cell; width: 50%; padding-top: 1ch; padding-bottom: 1ch;">
+            <a href='https://webring.recurse.com'"><img src='/recurse.png' width='30' alt='Recurse Center Webring' style="margin: 0; float:right;"></a>
         </div>
     </div>
 </div>
