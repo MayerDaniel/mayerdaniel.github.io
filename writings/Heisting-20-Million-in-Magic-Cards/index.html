@@ -27,7 +27,7 @@
 <hr>
 <h2>Intro</h2>
 <p>Digital trading card games have put nerds in a bind. With physical TCGs, we used to be able to convince our life partners, and ourselves, that in some vague way we were really &quot;investing&quot; in collectibles that could be liquidated if needed. In recent years, though, digital card games like Hearthstone and its ilk have laid the facts bare for all to see: us card-game nerds are just gambling addicts with extra steps. It is about the rush of opening the packs, baby! Not ownership of the cards.</p>
-<p>Games like Magic: The Gathering Arena (MTGA) and Hearthstone are still massively popular and huge financial successes without any illusion of scarcity or value in a secondary market. The cards &quot;owned&quot; and &quot;opened&quot; by each account are all just numbers in a database somewhere. That change in ownership model is a double-edged sword though. Us nerds can change numbers in a database a lot more easily than we can rob a board game shop. So, let's take advantage of that!</p>
+<p>Games like Magic: The Gathering Arena (MTGA) and Hearthstone are still massively popular and huge financial successes without any illusion of scarcity or value in a secondary market. The cards &quot;owned&quot; and &quot;opened&quot; by each account are all just numbers in a database somewhere. That change in ownership model is a double-edged sword though. We nerds can change numbers in a database much more easily than we can rob a board game shop. So, let's take advantage of that!</p>
 <h2>Casing the joint</h2>
 <p>MTGA is a Unity game, meaning that it is written in C#. C# decompiles extremely cleanly, making reverse engineering and manipulating the game logic a breeze. I covered this in more of a how-to format in <a href="/writings/Unity-Hacking-101-Hacking-with-Reflection/">my last post</a>, so I will skip it here and just get to the interesting part. Looking at the purchasing logic for in-game store items, the following function is used by the game to submit a purchase request using in-game currency:</p>
 <pre><code class="language-cs">...
@@ -53,7 +53,7 @@ PurchaseV2Req request = purchaseV2Req;
 ...
 }
 </code></pre>
-<p>When I took a look at this, it stood out to me that the request to purchase something from the store includes both the quantity being ordered <em>and</em> a calculated price of what the order should cost, which is calculated by the client(!) by multiplying the unit price of whatever is being purchased by the quantity being ordered. If that second important line is confusing to you, it can be written in the following more-readable way:</p>
+<p>When I took a look at this, it stood out to me that a request to purchase something from the store includes both the quantity being ordered <em>and</em> a calculated price of what the order should cost. What's more, the price is calculated by the client(!) by multiplying the unit price of whatever is being purchased by the quantity being ordered. If that second important line is confusing to you, here it is in a more readable way:</p>
 <pre><code class="language-cs">if (client_PurchaseOption != null) {
     purchaseV2Req.currencyQty = client_PurchaseOption.IntegerCost * quantity;
 } else {
@@ -65,9 +65,9 @@ PurchaseV2Req request = purchaseV2Req;
 <p>First I tried messing with the <code>purchaseQty</code> field by setting it to a negative number, just to see if there was any weird behavior there. My hope was that the logic for deducting a payment from my account serverside would look something like this:</p>
 <pre><code class="language-cs">accountBalance -= client_PurchaseOption.IntegerCost * quantity
 </code></pre>
-<p>If I purchased -1 card packs from the store, at a price of 200 gems (MTGA's in-game currency), <code>purchaseV2Req.currencyQty</code> would equal -200. Subtracting that from my account balance would give me more money!</p>
-<p>This did not work. The server checks to make sure that you are ordering a quantity greater than 0, and prevents the purchase from going through if not.</p>
-<p>I then tried messing with <code>currencyQty</code>, the calculated price. I thought this was going to be a winner and that I would be able to purchase whatever I wanted for 0 gems. No dice there either. If I tried to change the calculated price, I would get the following error back, due to a mismatch with a price calculation performed server-side:</p>
+<p>If I purchased -1 card packs from the store, at a price of <code>200</code> gems (MTGA's in-game currency), <code>purchaseV2Req.currencyQty</code> would equal <code>-200</code>. Subtracting that from my account balance would give me more money!</p>
+<p>This did not work. The server checks to make sure that you are ordering a quantity greater than <code>0</code>, and prevents the purchase from going through if not.</p>
+<p>I then tried messing with <code>currencyQty</code>, the calculated price. I thought this was going to be a winner and that I would be able to purchase whatever I wanted for <code>0</code> gems. No dice there either. If I tried to change the calculated price, I would get the following error back, due to a mismatch with a price calculation performed server-side:</p>
 <pre><code class="language-json">{
   &quot;code&quot;: &quot;Store_IncorrectCurrency&quot;,
   &quot;message&quot;: &quot;Failed to purchase listing because currencyQuantity is not equal to calculated price&quot;
@@ -104,9 +104,9 @@ PurchaseV2Req request = purchaseV2Req;
 21474837
 </code></pre>
 <p>We add <code>1</code> to the quotient to get the largest whole number that will surpass the overflow, since Python always rounds down when casting <code>float</code>s to <code>int</code>s. This means while we are ordering 21 million packs, our payment will be as close to <code>0</code> as feasibly possible. Potentially under the price of a single pack!</p>
-<p>We could order a number of packs higher than <code>21474837</code> as well, but all that is going to do is make the remainder, the price we are going to pay, higher. That is, until you order a number that, modded with <code>0xFFFFFFFF</code>, will wrap around to <code>0</code> again - which would essentially be around the area of multiples of <code>21474837</code>.</p>
+<p>We could order a number of packs higher than <code>21474837</code> as well, but all that is going to do is make the remainder, the price we are going to pay, higher. That is, until you order a number that, when modded with <code>0xFFFFFFFF</code>, will wrap around to <code>0</code> again - which would essentially be around the area of multiples of <code>21474837</code>.</p>
 <h2>Pulling it off</h2>
-<p>There's something else I fogot to mention. There's no way to actually submit bulk orders for an arbitrary number of packs in the UI. There's just a big button to buy a pack (and preset quantities of 10, 25, etc):</p>
+<p>There's something else I forgot to mention. There's no way to actually submit bulk orders for an arbitrary number of packs in the UI. There's just a big button to buy a pack (and preset quantities of 10, 25, etc):</p>
 <p><img src="pack.png" alt="pack" /></p>
 <p>But that's no problem, now that we know the order quantity needed to perform the overflow, we can just patch our binary with the appropriate opcodes to have the quantity hardcoded into our order! In C# it would look like this:</p>
 <pre><code class="language-cs">...
@@ -132,7 +132,7 @@ PurchaseV2Req request = purchaseV2Req;
 ...
 }
 </code></pre>
-<p>And in case you're wondering why I didn't just recreate the purchase request in python or something, it is because the shop communication is over some sort of socket. It wasn't just a REST api and it didn't seem worth figuring out.</p>
+<p>(And in case you're wondering why I didn't just recreate the purchase request in python or something, it is because the shop communication is over some sort of socket. It wasn't just a REST api and it didn't seem worth figuring out.)</p>
 <p>So with the binary patched, lets click our button and buy a pack...</p>
  <video width="100%" controls>
  <source src="packs.mp4#t=0.001" type="video/mp4">
@@ -176,7 +176,7 @@ PurchaseV2Req request = purchaseV2Req;
 <p>Another twist here, that I wasn't expecting, is that there are a finite number of cards per set. There is also a cap on the number of copies of each card you can own: you can only open 4 copies of each card before they become useless since you can't use more than 4 copies of a card in a deck. So what happens when you open so many packs that you reach the limit? I set up my autoclicker and found out. Once you cannot collect any more cards, the packs instead <em>refund you gems</em>.</p>
 <p><img src="gems.png" alt="free gems" /></p>
 <p>And let me tell you, you hit the card limit looooooong before you are even through your first 10,000 packs for whatever set you bought. This then gives you an nigh-infinite trove of gems to go out and buy 21 million packs of each of the other sets with! Or buy cosmetics, or participate in events, or whatever. MTGA just became <strong>truly</strong> free-to-play!</p>
-<p>Except not, because I reported this vulnerability to them and it has been patched. Shoutout to the WotC security and engineering teams for being lovely to work with and patching this bug in a timely manner!</p>
+<p>(Except not, because I reported this vulnerability to them and it has been patched. Shoutout to the WotC security and engineering teams for being lovely to work with and patching this bug in a timely manner!)</p>
 <h2>Conclusion</h2>
 <p>I hope this has been an illustrative example of the power of a simple bug. Just because a bug is simple, don't assume that it isn't there. Most of the crazy zero-click remote code execution exploits used by government agencies today also stem from simple missed checks on user-controlled variables. Ian Beer, one of the most talented vulnerability researchers in the world, sometimes just sits down and looks for <code>memmove</code> calls in the iOS kernel with controllable input. This led to him discovering <a href="https://googleprojectzero.blogspot.com/2020/12/an-ios-zero-click-radio-proximity.html">a wormable, zero-click, remote code execution exploit over radio</a>. But that stuff is the big leagues. For now, I am content just being able to build some new decks with my bug hunting :)</p>
 <p>P.S. -- There is also something to be said here about the value of digital goods. Frankly, I am ambivalent. The reality is that digital goods do and will continue to exist, and things like this are a side effect of that reality. If you are looking for some more thoughts to chew on in this space, I recommend <a href="https://craphound.com/content/Cory_Doctorow_-_Content.html"><em>CONTENT: Selected Essays on Technology, Creativity, Copyright and the Future of the Future</em> by Cory Doctorow</a>. It is published for free in its entirety that link.</p>
